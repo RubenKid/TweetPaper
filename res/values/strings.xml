@@ -1,5 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
     <string name="app_name">TweetPaper</string>
+    <string name="title_activity_tweetpaper_settings">TweetPaper</string>
+    <string name="action_settings">Settings</string>
+    <string name="interval_text">Update interval</string>
+    <string name="save_config">Save</string>
 
 </resources>

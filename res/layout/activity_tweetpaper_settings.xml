@@ -1,0 +1,64 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TweetpaperSettings" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp" >
+
+        <TextView
+            android:id="@+id/interval_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="@string/interval_text"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/interval_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="18dp"
+            android:layout_marginTop="58dp"
+            android:layout_toRightOf="@+id/interval_text" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/hashtag"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true" >
+
+        <ImageView
+            android:id="@+id/hashtag_logo"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/hashtag" />
+
+        <EditText
+            android:id="@+id/hashtag_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/hashtag_logo"
+            android:layout_toRightOf="@id/hashtag_logo"
+            android:ems="10"
+            android:textSize="20sp" />
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/save_config"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/hashtag"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:text="@string/save_config"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:background="#4099FF" />
+
+</RelativeLayout>
