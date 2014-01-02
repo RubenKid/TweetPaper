@@ -2,63 +2,102 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     tools:context=".TweetpaperSettings" >
 
-    <RelativeLayout
+    <LinearLayout
+        android:id="@+id/twitter_login"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp" >
-
-        <TextView
-            android:id="@+id/interval_text"
+        android:layout_height="fill_parent"
+        android:background="@android:color/white"
+        android:gravity="center|center_vertical"
+        android:orientation="vertical">
+        
+	    <ImageButton
+	        android:id="@+id/twitter_login_button"
+	        android:layout_width="400dp"
+	        android:layout_height="wrap_content"
+	        android:gravity="center|center_vertical"
+	        android:background="@null"
+	        android:src="@drawable/sign_in_twitter_button"
+	        android:onClick="onClickTwitterLogin" />    
+    
+    	<TextView
+            android:id="@+id/twitter_login_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:text="@string/interval_text"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <Spinner
-            android:id="@+id/interval_selector"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginLeft="18dp"
-            android:layout_marginTop="58dp"
-            android:layout_toRightOf="@+id/interval_text" />
-    </RelativeLayout>
-
+            android:layout_marginTop="30dp"
+            android:gravity="center|center_vertical"
+            android:text="@string/twitter_login_text"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+    </LinearLayout>
+    
     <RelativeLayout
-        android:id="@+id/hashtag"
+        android:id="@+id/settings_screen"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true" >
+        android:layout_height="fill_parent"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        android:orientation="vertical">
+    	
+		    <RelativeLayout
+		        android:id="@+id/interval"
+		        android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_marginTop="50dp" >
+		
+		        <TextView
+		            android:id="@+id/interval_text"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_alignParentLeft="true"
+		            android:text="@string/interval_text"
+		            android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		        <Spinner
+		            android:id="@+id/interval_selector"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_alignParentRight="true"
+		            android:layout_marginLeft="18dp"
+		            android:layout_marginTop="58dp"
+		            android:layout_toRightOf="@+id/interval_text" />
+		    </RelativeLayout>
 
-        <ImageView
-            android:id="@+id/hashtag_logo"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/hashtag" />
-
-        <EditText
-            android:id="@+id/hashtag_edit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/hashtag_logo"
-            android:layout_toRightOf="@id/hashtag_logo"
-            android:ems="10"
-            android:textSize="20sp" />
-    </RelativeLayout>
-
-    <Button
-        android:id="@+id/save_config"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/hashtag"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:text="@string/save_config"
-        android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:background="#4099FF" />
-
+		    <RelativeLayout
+		        android:id="@+id/hashtag"
+		        android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_centerInParent="true" >
+		
+		        <ImageView
+		            android:id="@+id/hashtag_logo"
+		            android:layout_width="50dp"
+		            android:layout_height="50dp"
+		            android:src="@drawable/hashtag" />
+		
+		        <EditText
+		            android:id="@+id/hashtag_edit"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_alignBottom="@id/hashtag_logo"
+		            android:layout_toRightOf="@id/hashtag_logo"
+		            android:hint="@string/hashtag"
+		            android:ems="10"
+		            android:textSize="20sp" />
+		    </RelativeLayout>
+		
+		    <Button
+		        android:id="@+id/save_config"
+		        android:layout_width="100dp"
+		        android:layout_height="wrap_content"
+		        android:layout_below="@+id/hashtag"
+		        android:layout_centerHorizontal="true"
+		        android:layout_marginTop="50dp"
+		        android:text="@string/save_config"
+		        android:textStyle="bold"
+		        android:textColor="@android:color/white"
+		        android:background="#4099FF" />
+	</RelativeLayout>
+    
 </RelativeLayout>

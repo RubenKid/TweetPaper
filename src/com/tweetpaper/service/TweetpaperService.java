@@ -26,9 +26,11 @@ public class TweetpaperService extends WallpaperService {
 
         
         Context context;
+        TweetpaperUtils utils;
   @Override
   public Engine onCreateEngine() {
 	context = this;
+	utils = new TweetpaperUtils(this);
     return new PixableWallpaperEngine();
   }
 
@@ -37,7 +39,7 @@ public class TweetpaperService extends WallpaperService {
     private final Runnable drawRunner = new Runnable() {
       @Override
       public void run() {
-        String hashtag = TweetpaperUtils.getHashTag(context);
+        String hashtag = utils.getHashTag();
         draw();
       }
 
@@ -52,7 +54,7 @@ public class TweetpaperService extends WallpaperService {
       screenX = metrics.widthPixels;
       screenY = metrics.heightPixels;
         
-      interval = TweetpaperUtils.getInterval(context);
+      interval = utils.getInterval();
         
       handler.post(drawRunner);
     }
