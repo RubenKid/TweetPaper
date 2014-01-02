@@ -8,5 +8,12 @@
     <string name="save_config">Save</string>
     <string name="twitter_login_text">Please login with your Twitter account to start</string>
     <string name="hashtag">hashtag</string>
-
+    <string-array name="intervals">
+        <item>5 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>24 hour</item>
+    </string-array>
+	<string name="intervals_prompt">Select an interval</string>
 </resources>

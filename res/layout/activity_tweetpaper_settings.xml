@@ -44,7 +44,11 @@
 		        android:id="@+id/interval"
 		        android:layout_width="fill_parent"
 		        android:layout_height="wrap_content"
-		        android:layout_marginTop="50dp" >
+		        android:layout_marginTop="50dp"
+		        android:layout_marginLeft="15dp"
+		        android:layout_marginRight="15dp"
+		        android:paddingTop="10dp"
+		        android:paddingBottom="10dp">
 		
 		        <TextView
 		            android:id="@+id/interval_text"
@@ -52,21 +56,24 @@
 		            android:layout_height="wrap_content"
 		            android:layout_alignParentLeft="true"
 		            android:text="@string/interval_text"
+		            
 		            android:textAppearance="?android:attr/textAppearanceMedium" />
 		
-		        <Spinner
+		       	<Spinner
 		            android:id="@+id/interval_selector"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
 		            android:layout_alignParentRight="true"
 		            android:layout_marginLeft="18dp"
 		            android:layout_marginTop="58dp"
-		            android:layout_toRightOf="@+id/interval_text" />
+		            android:layout_alignBottom="@id/interval_text"
+		             android:entries="@array/intervals"
+		             android:prompt="@string/intervals_prompt"/>
 		    </RelativeLayout>
 
 		    <RelativeLayout
 		        android:id="@+id/hashtag"
-		        android:layout_width="fill_parent"
+		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
 		        android:layout_centerInParent="true" >
 		
