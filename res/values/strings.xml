@@ -8,6 +8,7 @@
     <string name="save_config">Save</string>
     <string name="twitter_login_text">Please login with your Twitter account to start</string>
     <string name="hashtag">hashtag</string>
+    <string name="no_connection">No internet connection found, please connect to continue</string>
     <string-array name="intervals">
         <item>5 minutes</item>
         <item>15 minutes</item>

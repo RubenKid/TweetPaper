@@ -1,4 +1,4 @@
-package com.tweetpaper;
+package com.tweetpaper.ui;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -7,6 +7,11 @@ import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
+import com.tweetpaper.R;
+import com.tweetpaper.R.id;
+import com.tweetpaper.R.layout;
+import com.tweetpaper.R.menu;
+import com.tweetpaper.R.string;
 import com.tweetpaper.utils.Constants;
 import com.tweetpaper.utils.TweetpaperUtils;
 
@@ -27,6 +32,7 @@ import android.view.View;
 import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 public class TweetpaperSettings extends Activity {
 
@@ -54,6 +60,10 @@ public class TweetpaperSettings extends Activity {
 
 	public void onClickTwitterLogin(View v){
 		try {
+			if(!utils.isNetworkAvailable(this.getApplicationContext())){
+				Toast.makeText(this.getApplicationContext(), getString(R.string.no_connection), Toast.LENGTH_LONG).show();
+				return;
+			}
 			  requestToken = twitter.getOAuthRequestToken(Constants.TWITTER_CALLBACK_URL);	
 			  showTwitterLoginDialog(requestToken.getAuthenticationURL());
 		  } catch (TwitterException e) {

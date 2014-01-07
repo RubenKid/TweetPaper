@@ -10,6 +10,7 @@
     
     <uses-permission android:name="android.permission.INTERNET" /> 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -18,7 +19,7 @@
         android:launchMode="singleTop"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.tweetpaper.TweetpaperSettings"
+            android:name="com.tweetpaper.ui.TweetpaperSettings"
             android:label="@string/title_activity_tweetpaper_settings" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,9 +33,26 @@
                 <data android:scheme="oauth" android:host="tweetpaper"/>
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.tweetpaper.WebViewActivity"
-            android:theme="@android:style/Theme.NoTitleBar" />
+        <service
+            android:name="com.tweetpaper.service.TweetpaperService"
+            android:enabled="true"
+            android:label="Pixable"
+            android:permission="android.permission.BIND_WALLPAPER" >
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" >
+                </action>
+            </intent-filter>
+
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/wallpaper" >
+            </meta-data>
+        </service>
+        <receiver android:name=".WallpaperReceiver" android:enabled="true" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

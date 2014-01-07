@@ -1,6 +1,6 @@
 package com.tweetpaper.utils;
 
-import com.tweetpaper.TweetpaperSettings;
+import com.tweetpaper.ui.TweetpaperSettings;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
@@ -15,6 +15,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.Html;
@@ -42,9 +44,15 @@ public class TweetpaperUtils{
       }
 	  
 	  /*** Get twitter token for logged in users* */
-	  public String getTwitterToken() {
+	  public String getTwitterAccessToken() {
         SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
 	  	return mPrefs.getString(Constants.PREFS_TWITTER_OAUTH_TOKEN, null);
+	  }
+	  
+	  /*** Get twitter Access token secret for logged in users* */
+	  public String getTwitterAccessTokenSecret() {
+        SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+	  	return mPrefs.getString(Constants.PREFS_TWITTER_OAUTH_TOKEN_SECRET, null);
 	  }
 	  
 	  /*** Check if Twitter Logged in* */
@@ -82,4 +90,10 @@ public class TweetpaperUtils{
               Log.e("Twitter Login Error", "> " + e.getMessage());
           }
 	  }
+	  
+	  public boolean isNetworkAvailable(Context ctx) {
+		    ConnectivityManager connectivityManager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+		    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+		    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+		}
 }
