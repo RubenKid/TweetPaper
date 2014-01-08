@@ -36,7 +36,7 @@
         <service
             android:name="com.tweetpaper.service.TweetpaperService"
             android:enabled="true"
-            android:label="Pixable"
+            android:label="TweetPaper"
             android:permission="android.permission.BIND_WALLPAPER" >
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" >

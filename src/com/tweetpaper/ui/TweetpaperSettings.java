@@ -59,18 +59,36 @@ public class TweetpaperSettings extends Activity {
 	}
 
 	public void onClickTwitterLogin(View v){
-		try {
 			if(!utils.isNetworkAvailable(this.getApplicationContext())){
 				Toast.makeText(this.getApplicationContext(), getString(R.string.no_connection), Toast.LENGTH_LONG).show();
 				return;
 			}
-			  requestToken = twitter.getOAuthRequestToken(Constants.TWITTER_CALLBACK_URL);	
-			  showTwitterLoginDialog(requestToken.getAuthenticationURL());
-		  } catch (TwitterException e) {
-			  e.printStackTrace();
-		  }
-		//new loginToTwitterAsyncTask(this).execute();
+			showLoader();
+			new showTwitterLoginPopup().execute();		
 	}
+	
+	private class showTwitterLoginPopup extends AsyncTask<Void, Void, RequestToken> {
+
+        @Override
+        protected RequestToken doInBackground(Void... params) {
+        	RequestToken rt = null;
+        	try {
+        		rt = twitter.getOAuthRequestToken(Constants.TWITTER_CALLBACK_URL);	
+        	 } catch (TwitterException e) {
+   			  e.printStackTrace();
+   		  	}
+            return rt;
+        }
+
+        @Override
+        protected void onPostExecute(RequestToken rt) {
+        	if(rt != null){
+	        	requestToken = rt;
+	        	showTwitterLoginDialog(rt.getAuthenticationURL());
+        	}
+        }
+    }
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -119,8 +137,10 @@ public class TweetpaperSettings extends Activity {
 	        }
 			@Override
 	        public void onPageFinished(WebView view, String url) {
-				if(!url.startsWith(Constants.TWITTER_CALLBACK_URL))
+				if(!url.startsWith(Constants.TWITTER_CALLBACK_URL)){
 					dialog.show();
+		        	hideLoader();
+				}
 	        }
 			
 			@Override
@@ -134,5 +154,12 @@ public class TweetpaperSettings extends Activity {
         wb.loadUrl(url);
 	}
 	
+	private void showLoader(){
+		findViewById(R.id.loading).setVisibility(View.VISIBLE);
+	}
+	
+	private void hideLoader(){
+		findViewById(R.id.loading).setVisibility(View.GONE);
+	}
 
 }

@@ -17,4 +17,6 @@
         <item>24 hour</item>
     </string-array>
 	<string name="intervals_prompt">Select an interval</string>
+	<string name="default_text_no_internet">No Images available! \n \n Please make sure you are logged with your Twitter account and you are connected to internet</string>
+	<string name="default_text_no_images">No Images available! \n \n We are working on retrieving images from Twitter for hashtag %1$s</string>
 </resources>

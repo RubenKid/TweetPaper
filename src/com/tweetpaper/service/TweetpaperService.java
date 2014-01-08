@@ -35,8 +35,12 @@ import android.os.Handler;
 import android.service.wallpaper.WallpaperService;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
+import android.view.View;
+import android.view.View.MeasureSpec;
 
+import com.tweetpaper.R;
 import com.tweetpaper.utils.Constants;
 import com.tweetpaper.utils.TweetpaperUtils;
 	
@@ -65,7 +69,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 		initTwitter();
 	    tweetpaperEngine = new TweetpaperEngine();
 	    tweetpaperEngine.setContext(this.getApplicationContext());
-	return tweetpaperEngine;
+	    return tweetpaperEngine;
 	}
 	
 	@Override
@@ -101,10 +105,13 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	                  handler.postDelayed(drawRunner, interval);
 	                  return;
 	          }
-	          if(!utils.isNetworkAvailable(context) || itemsArray.size() == 0){
+	          if(!utils.isNetworkAvailable(context)){
+	        	 loadDefaultWallpaper();
 	             handler.postDelayed(drawRunner, RETRY_TIMEOUT);
 	          }else{
-	                  draw();
+	    	      	if(!twitterInitialized)
+	    	      		initTwitterSearch();
+	                draw();
 	          }
 	                          
 	  }
@@ -117,6 +124,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	private int interval;
 	private Context context;
 	private Handler statusRequestHandler = new Handler();
+	private boolean twitterInitialized = false;
 
 	public TweetpaperEngine() {
 	        //Log.d(LOG_TAG,"PixableWallpaperEngine");
@@ -129,11 +137,12 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	  
 	  getSurfaceHolder().addCallback(surfaceCallback);
 	  
-	      handler.post(drawRunner);
+	      handler.post(drawRunner);   
+	}
 	
-	       // clearHandler.postDelayed(clearItems, ITEMS_EXPIRATION_TIME);
-	      
-			//Enable Twitter Streaming API
+	private void initTwitterSearch(){
+	     if(hashtag != null && !hashtag.equals("") && utils.getTwitterAccessToken() != null && utils.getTwitterAccessTokenSecret() != null){
+		    //Enable Twitter Streaming API
 			FilterQuery fq = new FilterQuery(); 
 	        String keywords[] = {hashtag};
 	        fq.track(keywords);
@@ -142,8 +151,8 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	        
 	        //Search tweets
 	        new getTweetsByHashtag().execute(new Query(hashtag));
-	
-	        
+	        twitterInitialized = true;
+	      }
 	}
 	
 	SurfaceHolder.Callback surfaceCallback =  new SurfaceHolder.Callback(){
@@ -174,9 +183,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	public void updateInterval(){          
 	        SharedPreferences mPrefs = getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
 	                interval = mPrefs.getInt(Constants.PREFS_INTERVAL, INTERVAL_MINUTES_DEFAULT);     
-	                interval = interval * 60 * 1000; //Minutes to Millis
-	                
-	                interval = 5000;
+	                interval = interval * 60 * 1000; //Minutes to Millis	                
 	}
 
 	@Override
@@ -216,7 +223,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	  if(nextPositionToDisplay < itemsArray.size()){
 	          url = itemsArray.get(nextPositionToDisplay);
 	  }else{
-	          //loadDefaultWallpaper();
+	          loadDefaultWallpaper();
 	          return;
 	  }
 	  new loadBitmapFromUrl().execute(url);
@@ -280,22 +287,21 @@ import com.tweetpaper.utils.TweetpaperUtils;
 
 	
 
-/*private void loadDefaultWallpaper(){
-        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View layout = inflater.inflate(R.layout.wallpaper_default, null);
-        layout.setDrawingCacheEnabled(true);
-        
-        
-        SurfaceHolder holder = getSurfaceHolder();
-        Canvas canvas = holder.lockCanvas();
-        if(canvas != null){
-            layout.measure(MeasureSpec.makeMeasureSpec(canvas.getWidth(), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(canvas.getHeight(), MeasureSpec.EXACTLY));
-            layout.layout(0, 0, layout.getMeasuredWidth(), layout.getMeasuredHeight());
-            canvas.drawBitmap(layout.getDrawingCache(), 0, 0, new Paint());
-                holder.unlockCanvasAndPost(canvas);
-        }
-    }
-}*/
+		private void loadDefaultWallpaper(){
+		        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		        View layout = inflater.inflate(R.layout.wallpaper_default, null);
+		        layout.setDrawingCacheEnabled(true);
+		        
+		        
+		        SurfaceHolder holder = getSurfaceHolder();
+		        Canvas canvas = holder.lockCanvas();
+		        if(canvas != null){
+		            layout.measure(MeasureSpec.makeMeasureSpec(canvas.getWidth(), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(canvas.getHeight(), MeasureSpec.EXACTLY));
+		            layout.layout(0, 0, layout.getMeasuredWidth(), layout.getMeasuredHeight());
+		            canvas.drawBitmap(layout.getDrawingCache(), 0, 0, new Paint());
+		                holder.unlockCanvasAndPost(canvas);
+		        }
+		    }
 		
 		 StatusListener statusListener = new StatusListener() {
 
