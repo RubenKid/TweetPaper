@@ -103,6 +103,8 @@
 		        android:layout_marginTop="50dp"
 		        android:text="@string/save_config"
 		        android:textStyle="bold"
+		        android:onClick="onClickSave"
+		        android:maxLines="1"
 		        android:textColor="@android:color/white"
 		        android:background="#4099FF" />
 	</RelativeLayout>

@@ -39,6 +39,7 @@ import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.View.MeasureSpec;
+import android.widget.TextView;
 
 import com.tweetpaper.R;
 import com.tweetpaper.utils.Constants;
@@ -106,7 +107,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	                  return;
 	          }
 	          if(!utils.isNetworkAvailable(context)){
-	        	 loadDefaultWallpaper();
+	        	 loadDefaultWallpaper(getString(R.string.default_text_no_internet));
 	             handler.postDelayed(drawRunner, RETRY_TIMEOUT);
 	          }else{
 	    	      	if(!twitterInitialized)
@@ -123,7 +124,6 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	private int screenY;
 	private int interval;
 	private Context context;
-	private Handler statusRequestHandler = new Handler();
 	private boolean twitterInitialized = false;
 
 	public TweetpaperEngine() {
@@ -134,6 +134,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	    
 	  handler.removeCallbacks(drawRunner);
 	  updateInterval();
+	  updateHashtag();
 	  
 	  getSurfaceHolder().addCallback(surfaceCallback);
 	  
@@ -180,19 +181,36 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	        context = ctx;
 	}
 	
-	public void updateInterval(){          
+	public boolean updateInterval(){          
 	        SharedPreferences mPrefs = getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
-	                interval = mPrefs.getInt(Constants.PREFS_INTERVAL, INTERVAL_MINUTES_DEFAULT);     
-	                interval = interval * 60 * 1000; //Minutes to Millis	                
+	        int newInterval = mPrefs.getInt(Constants.PREFS_INTERVAL, INTERVAL_MINUTES_DEFAULT);     
+	        newInterval = newInterval * 60 * 1000; //Minutes to Millis	 
+	        
+	        boolean intervalChanged = newInterval != interval;
+	        interval = newInterval;
+	        return intervalChanged;
+	}
+	
+	public boolean updateHashtag(){   
+        SharedPreferences mPrefs = getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+        String newHashtag = mPrefs.getString(Constants.PREFS_HASHTAG, TweetpaperUtils.HASHTAG_DEFAULT);    
+        if(!newHashtag.equals(hashtag)){
+        	hashtag = newHashtag;
+        	initTwitterSearch();
+        	nextPositionToDisplay = 0;
+        	itemsArray = new ArrayList<String>();
+        	return true;
+        }else
+        	return false;
 	}
 
 	@Override
 	public void onVisibilityChanged(boolean visible) {
 	  this.visible = visible;
-	  int oldInterval = interval;
-	  updateInterval();
+	  boolean intervalChanged = updateInterval();
+	  boolean hashtagChanged = updateHashtag();
 	  //If background is visible or no items or we changed interval, we should refresh
-	  if ((visible && (System.currentTimeMillis() - lastchange) > interval) || itemsArray.size() == 0 || (oldInterval != interval)) {
+	  if ((visible && (System.currentTimeMillis() - lastchange) > interval) || itemsArray.size() == 0 || intervalChanged || hashtagChanged) {
 	    handler.post(drawRunner);
 	  } else if(!visible){
 	    //handler.removeCallbacks(drawRunner);
@@ -223,7 +241,8 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	  if(nextPositionToDisplay < itemsArray.size()){
 	          url = itemsArray.get(nextPositionToDisplay);
 	  }else{
-	          loadDefaultWallpaper();
+	          loadDefaultWallpaper(getString(R.string.default_text_no_images,hashtag));
+	          handler.postDelayed(drawRunner, RETRY_TIMEOUT);
 	          return;
 	  }
 	  new loadBitmapFromUrl().execute(url);
@@ -287,9 +306,11 @@ import com.tweetpaper.utils.TweetpaperUtils;
 
 	
 
-		private void loadDefaultWallpaper(){
+		private void loadDefaultWallpaper(String text){
 		        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		        View layout = inflater.inflate(R.layout.wallpaper_default, null);
+		        TextView message = (TextView)layout.findViewById(R.id.wallpaper_default_text);
+		        message.setText(text);
 		        layout.setDrawingCacheEnabled(true);
 		        
 		        
@@ -370,11 +391,18 @@ import com.tweetpaper.utils.TweetpaperUtils;
 		                			}
 		                		}
 		                	}
-		                	if(itemsArray.size() < 100)
+		                	if(itemsArray.size() < 100 && qr.nextQuery() != null)
 		                		new getTweetsByHashtag().execute(qr.nextQuery());
+		                	else
+		                		handler.postDelayed(new Runnable() {
+			                		  @Override
+			                		  public void run() {
+			                			 new getTweetsByHashtag().execute(new Query(hashtag));
+			                		  }
+			                		}, interval);
+		                		
 	                	}else{
 	                		Log.i("tweetpaper","No more Tweets for now");
-	                		final Handler handler = new Handler();
 	                		handler.postDelayed(new Runnable() {
 	                		  @Override
 	                		  public void run() {
@@ -384,9 +412,10 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	                	}
 	                    return urlsArray;
 	                } catch (Exception e) {
+	                	e.printStackTrace();
 	                	Log.i("tweetpaper","No more Tweets for now");
-	                	final Handler handler = new Handler();
-                		handler.postDelayed(new Runnable() {
+	                	
+	                	handler.postDelayed(new Runnable() {
                 		  @Override
                 		  public void run() {
                 			 new getTweetsByHashtag().execute(new Query(hashtag));

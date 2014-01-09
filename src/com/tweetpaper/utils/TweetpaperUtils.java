@@ -24,7 +24,7 @@ import android.util.Log;
 
 public class TweetpaperUtils{
 	
-    private static String HASHTAG_DEFAULT = "nyc";
+    public static String HASHTAG_DEFAULT = "";
     private static int INTERVAL_DEFAULT = 60*60*1000; //1 hour as default 
     
     private Context context;
@@ -38,9 +38,19 @@ public class TweetpaperUtils{
           return prefs.getString(Constants.PREFS_HASHTAG, HASHTAG_DEFAULT);
       }
 	  
+	  public void setHashTag(String hashtag) {  
+          SharedPreferences prefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          prefs.edit().putString(Constants.PREFS_HASHTAG, hashtag).commit();
+      }
+	  
 	  public int getInterval() {  
 		  SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
           return mPrefs.getInt(Constants.PREFS_INTERVAL, INTERVAL_DEFAULT);
+      }
+	  
+	  public void setInterval(int interval) {  
+          SharedPreferences prefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          prefs.edit().putInt(Constants.PREFS_INTERVAL, interval).commit();
       }
 	  
 	  /*** Get twitter token for logged in users* */

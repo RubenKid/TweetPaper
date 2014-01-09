@@ -6,24 +6,29 @@ import twitter4j.TwitterFactory;
 import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
-
 import com.tweetpaper.R;
 import com.tweetpaper.R.id;
 import com.tweetpaper.R.layout;
 import com.tweetpaper.R.menu;
 import com.tweetpaper.R.string;
+import com.tweetpaper.service.TweetpaperService;
 import com.tweetpaper.utils.Constants;
 import com.tweetpaper.utils.TweetpaperUtils;
-
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.WallpaperInfo;
+import android.app.WallpaperManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -32,6 +37,8 @@ import android.view.View;
 import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 public class TweetpaperSettings extends Activity {
@@ -39,7 +46,10 @@ public class TweetpaperSettings extends Activity {
 	TweetpaperUtils utils;
     private Twitter twitter;
     public RequestToken requestToken;
-	
+    EditText hashtagEditText;
+    
+    private int[] intervals = {5,15,30,60,60*24};
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -56,6 +66,7 @@ public class TweetpaperSettings extends Activity {
 		
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
+		hashtagEditText = (EditText)findViewById(R.id.hashtag_edit);
 	}
 
 	public void onClickTwitterLogin(View v){
@@ -65,6 +76,48 @@ public class TweetpaperSettings extends Activity {
 			}
 			showLoader();
 			new showTwitterLoginPopup().execute();		
+	}
+	
+	public void onClickSave(View v){
+		Spinner interval = (Spinner)findViewById(R.id.interval_selector);
+		utils.setHashTag(hashtagEditText.getText().toString());
+		utils.setInterval(intervals[interval.getSelectedItemPosition()]);
+		Toast.makeText(this,getString(R.string.saved_ok), Toast.LENGTH_LONG).show();
+		WallpaperInfo wallpaperInfo = WallpaperManager.getInstance(this).getWallpaperInfo();
+        if(wallpaperInfo == null || !(wallpaperInfo.getComponent().getClassName().startsWith("com.tweetpaper")))
+        	showSetWallpaperDialog();
+		
+	}
+	
+	public void showSetWallpaperDialog() {
+	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+	    builder.setTitle(getString(R.string.set_wallpaper_title));
+	    builder.setMessage(getString(R.string.set_wallpaper_text));
+	    final Activity activity = this;
+	    builder.setPositiveButton(getString(R.string.yes), new OnClickListener(){
+	    
+			@SuppressLint("InlinedApi")
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+	                Intent intent = new Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
+	            intent.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,new ComponentName(activity, TweetpaperService.class));
+	            startActivity(intent);
+	            }else{
+	                    Intent intent = new Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
+	                    startActivity(intent);
+	            }
+			}
+	    	
+	    });
+	    builder.setNegativeButton(getString(R.string.no), new OnClickListener(){
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+	    	
+	    });
+	    builder.show();
 	}
 	
 	private class showTwitterLoginPopup extends AsyncTask<Void, Void, RequestToken> {
@@ -103,7 +156,7 @@ public class TweetpaperSettings extends Activity {
         	utils.storeTwitterCredentials(uri,twitter,requestToken);
         	displayLoggedInScreen();
         }*/
-        
+		hashtagEditText.setText(utils.getHashTag());
         if(utils.isTwitterLoggedIn())
         	displayLoggedInScreen();
         super.onResume();
