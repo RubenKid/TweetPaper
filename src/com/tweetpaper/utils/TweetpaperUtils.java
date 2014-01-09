@@ -11,6 +11,8 @@ import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 import android.app.Activity;
+import android.app.WallpaperInfo;
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -51,6 +53,36 @@ public class TweetpaperUtils{
 	  public void setInterval(int interval) {  
           SharedPreferences prefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
           prefs.edit().putInt(Constants.PREFS_INTERVAL, interval).commit();
+      }
+	  
+	  public boolean isPaused() {  
+		  SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          return mPrefs.getBoolean(Constants.PREFS_PAUSED, false);
+      }
+	  
+	  public void setPaused(boolean paused) {  
+          SharedPreferences prefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          prefs.edit().putBoolean(Constants.PREFS_PAUSED, paused).commit();
+      }
+	  
+	  public boolean isBackPressed() {  
+		  SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          return mPrefs.getBoolean(Constants.PREFS_BACK, false);
+      }
+	  
+	  public void setBack(boolean back) {  
+          SharedPreferences prefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          prefs.edit().putBoolean(Constants.PREFS_BACK, back).commit();
+      }
+	  
+	  public boolean isForwardPressed() {  
+		  SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          return mPrefs.getBoolean(Constants.PREFS_FORWARD, false);
+      }
+	  
+	  public void setForward(boolean forward) {  
+          SharedPreferences prefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          prefs.edit().putBoolean(Constants.PREFS_FORWARD, forward).commit();
       }
 	  
 	  /*** Get twitter token for logged in users* */
@@ -101,9 +133,16 @@ public class TweetpaperUtils{
           }
 	  }
 	  
-	  public boolean isNetworkAvailable(Context ctx) {
-		    ConnectivityManager connectivityManager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+	  public boolean isNetworkAvailable() {
+		    ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 		    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
 		}
+	  
+	  public boolean isTweetpaperSet(){
+		  WallpaperInfo wallpaperInfo = WallpaperManager.getInstance(context).getWallpaperInfo();
+	      if(wallpaperInfo != null && (wallpaperInfo.getComponent().getClassName().startsWith("com.tweetpaper")))
+	    	  return true; 
+	      return false;	       
+	  }
 }

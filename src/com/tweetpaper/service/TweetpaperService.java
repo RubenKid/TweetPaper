@@ -48,11 +48,9 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	public class TweetpaperService extends WallpaperService {
 	
 	    private static int INTERVAL_MINUTES_DEFAULT = 60; //60 minutes as default
-	    private static int ITEMS_EXPIRATION_TIME = 24*60*60*1000; //24 hours for Items Expiration time
 	    private static int RETRY_TIMEOUT = 1000;
 	    
-	    private static String LOG_TAG = "PixableWallpaper";
-	    private static String VIEW = "Wallpaper";
+	    private static int MAX_ITEMS = 500;
 	    
 	    private Bitmap currentBitmap;
 	    TweetpaperUtils utils;
@@ -102,12 +100,18 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	private final Runnable drawRunner = new Runnable() {
 	  @Override
 	  public void run() {
-	          if(!visible){
+	          if((!visible || utils.isPaused()) && !forceUpdate){
+	        	  Log.i("tweetpaper","Wallpaper not visible or paused");
 	                  handler.postDelayed(drawRunner, interval);
 	                  return;
 	          }
-	          if(!utils.isNetworkAvailable(context)){
-	        	 loadDefaultWallpaper(getString(R.string.default_text_no_internet));
+	          if(!utils.isNetworkAvailable()){
+	        	  Log.i("tweetpaper","No network");
+	        	  Bitmap bitmapCache = getBitmapInCache();
+	              if(bitmapCache != null)
+	                  drawBitmapInCanvas(bitmapCache);
+	              else
+	            	  loadDefaultWallpaper(getString(R.string.default_text_no_internet));
 	             handler.postDelayed(drawRunner, RETRY_TIMEOUT);
 	          }else{
 	    	      	if(!twitterInitialized)
@@ -125,6 +129,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	private int interval;
 	private Context context;
 	private boolean twitterInitialized = false;
+	boolean forceUpdate = false;
 
 	public TweetpaperEngine() {
 	        //Log.d(LOG_TAG,"PixableWallpaperEngine");
@@ -185,7 +190,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	        SharedPreferences mPrefs = getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
 	        int newInterval = mPrefs.getInt(Constants.PREFS_INTERVAL, INTERVAL_MINUTES_DEFAULT);     
 	        newInterval = newInterval * 60 * 1000; //Minutes to Millis	 
-	        
+	        	        
 	        boolean intervalChanged = newInterval != interval;
 	        interval = newInterval;
 	        return intervalChanged;
@@ -207,10 +212,23 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	@Override
 	public void onVisibilityChanged(boolean visible) {
 	  this.visible = visible;
-	  boolean intervalChanged = updateInterval();
+	  updateInterval();
 	  boolean hashtagChanged = updateHashtag();
+	  forceUpdate = false;
+	  
+	  if(utils.isBackPressed() && nextPositionToDisplay > 1 && !utils.isForwardPressed()){
+		  nextPositionToDisplay = nextPositionToDisplay-2;
+		  forceUpdate = true;
+		  utils.setBack(false);
+	  }
+	  if(utils.isForwardPressed() && !utils.isBackPressed()){
+		  utils.setForward(false);
+		  forceUpdate = true;
+	  }
+		  
+	  
 	  //If background is visible or no items or we changed interval, we should refresh
-	  if ((visible && (System.currentTimeMillis() - lastchange) > interval) || itemsArray.size() == 0 || intervalChanged || hashtagChanged) {
+	  if ((visible && (System.currentTimeMillis() - lastchange) > interval) || itemsArray.size() == 0 || hashtagChanged || utils.isForwardPressed() || forceUpdate) {
 	    handler.post(drawRunner);
 	  } else if(!visible){
 	    //handler.removeCallbacks(drawRunner);
@@ -236,15 +254,17 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	
 	private void draw() {
 	  String url;
-	  if(nextPositionToDisplay >= itemsArray.size())
+	  if(itemsArray.size() > 0 && nextPositionToDisplay >= itemsArray.size())
 	          nextPositionToDisplay = 0;
 	  if(nextPositionToDisplay < itemsArray.size()){
 	          url = itemsArray.get(nextPositionToDisplay);
 	  }else{
+		  	Log.i("tweetpaper","No images Available");
 	          loadDefaultWallpaper(getString(R.string.default_text_no_images,hashtag));
 	          handler.postDelayed(drawRunner, RETRY_TIMEOUT);
 	          return;
 	  }
+	  Log.i("tweetpaper","Show next item ("+nextPositionToDisplay+" of "+itemsArray.size()+")");
 	  new loadBitmapFromUrl().execute(url);
 	  handler.removeCallbacks(drawRunner);
 	  if (visible) {
@@ -352,11 +372,14 @@ import com.tweetpaper.utils.TweetpaperUtils;
 
 			@Override
 			public void onStatus(Status status) {
-				Log.i("Tweetpaper","Status received: "+status.getText());
+				//Log.i("Tweetpaper","Status received: "+status.getText());
 				if(status.getMediaEntities() != null){
         			for(MediaEntity media : status.getMediaEntities()){
         				if(media.getType().equals("photo")){
         					itemsArray.add(media.getMediaURL());
+        					if(itemsArray.size() >= MAX_ITEMS)
+        						itemsArray.remove(0);
+        						
         				}
         			}
         		}
@@ -376,13 +399,9 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	        	QueryResult qr;
 	        	ArrayList<String> urlsArray = new ArrayList<String>();
 	                try {
-	                	Log.i("tweetpaper","Searching...");
 	                	qr = twitter.search(query[0]);
-	                	Log.i("tweetpaper","Searching1...");
 	                	if(qr != null){
-	                		Log.i("tweetpaper","Searchin2...");
 		                	ArrayList<twitter4j.Status> qrTweets = (ArrayList<twitter4j.Status>)qr.getTweets(); 
-		                	Log.i("tweetpaper","found "+qrTweets.size() + "items");
 		                	for(twitter4j.Status status : qrTweets){
 		                		if(status.getMediaEntities() != null){
 		                			for(MediaEntity media : status.getMediaEntities()){
@@ -402,7 +421,6 @@ import com.tweetpaper.utils.TweetpaperUtils;
 			                		}, interval);
 		                		
 	                	}else{
-	                		Log.i("tweetpaper","No more Tweets for now");
 	                		handler.postDelayed(new Runnable() {
 	                		  @Override
 	                		  public void run() {
@@ -413,7 +431,6 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	                    return urlsArray;
 	                } catch (Exception e) {
 	                	e.printStackTrace();
-	                	Log.i("tweetpaper","No more Tweets for now");
 	                	
 	                	handler.postDelayed(new Runnable() {
                 		  @Override
@@ -427,8 +444,12 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	        
 	        protected void onPostExecute(ArrayList<String> urlsArray) {
 	        	if(urlsArray != null && urlsArray.size() > 0){
-	        		Log.i("tweetpaper","Added "+urlsArray.size() + " by searching");
+	        		//Log.i("tweetpaper","Added "+urlsArray.size() + " by searching");
 	        		itemsArray.addAll(urlsArray);
+	        		if(itemsArray.size() >= MAX_ITEMS){
+	        			for(int i=0;i<urlsArray.size();i++)
+	        				itemsArray.remove(0);
+	        		}
 	        	}
 	        	
 	        }

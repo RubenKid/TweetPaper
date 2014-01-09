@@ -18,10 +18,12 @@
     </string-array>
 	<string name="intervals_prompt">Select an interval</string>
 	<string name="default_text_no_internet">No Images available! \n \n Please make sure you are logged with your Twitter account and you are connected to internet</string>
-	<string name="default_text_no_images">Loading images from Twitter for hashtag %1$s &#8230;</string>
-	<string name="saved_ok">Settings Saved</string>
+	<string name="default_text_no_images">Loading images from Twitter for hashtag \'%1$s\' &#8230;</string>
+	<string name="saved_ok">Configuration Saved</string>
 	<string name="set_wallpaper_title">Set Wallpaper</string>
 	<string name="set_wallpaper_text">Do you want to set TweetPaper as your main Wallpaper?</string>
 	<string name="yes">Yes!</string>
 	<string name="no">No, thanks</string>
+	<string name="error_empty_hashtag">Error&#8230; hashtag cannot be empty</string>
+	<string name="wallpaper_chooser_msg">Please select TweetPaper</string>
 </resources>

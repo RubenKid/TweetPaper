@@ -6,6 +6,7 @@ import twitter4j.TwitterFactory;
 import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
+
 import com.tweetpaper.R;
 import com.tweetpaper.R.id;
 import com.tweetpaper.R.layout;
@@ -14,6 +15,7 @@ import com.tweetpaper.R.string;
 import com.tweetpaper.service.TweetpaperService;
 import com.tweetpaper.utils.Constants;
 import com.tweetpaper.utils.TweetpaperUtils;
+
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -31,13 +33,16 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnKeyListener;
 import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -48,7 +53,7 @@ public class TweetpaperSettings extends Activity {
     public RequestToken requestToken;
     EditText hashtagEditText;
     
-    private int[] intervals = {5,15,30,60,60*24};
+    private int[] intervals = {Constants.INTERVAL_5M,Constants.INTERVAL_15M,Constants.INTERVAL_30M,Constants.INTERVAL_1H,Constants.INTERVAL_24H};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +72,22 @@ public class TweetpaperSettings extends Activity {
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 		hashtagEditText = (EditText)findViewById(R.id.hashtag_edit);
+		hashtagEditText.setOnKeyListener(new OnKeyListener(){
+
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+					onClickSave(null);
+					return true;
+				}
+				return false;
+			}
+			
+		});
 	}
 
 	public void onClickTwitterLogin(View v){
-			if(!utils.isNetworkAvailable(this.getApplicationContext())){
+			if(!utils.isNetworkAvailable()){
 				Toast.makeText(this.getApplicationContext(), getString(R.string.no_connection), Toast.LENGTH_LONG).show();
 				return;
 			}
@@ -78,17 +95,65 @@ public class TweetpaperSettings extends Activity {
 			new showTwitterLoginPopup().execute();		
 	}
 	
+	@SuppressLint("InlinedApi")
 	public void onClickSave(View v){
+		if(hashtagEditText.getText().toString().equals("")){
+			Toast.makeText(this, getString(R.string.error_empty_hashtag), Toast.LENGTH_LONG).show();
+		}
 		Spinner interval = (Spinner)findViewById(R.id.interval_selector);
 		utils.setHashTag(hashtagEditText.getText().toString());
 		utils.setInterval(intervals[interval.getSelectedItemPosition()]);
-		Toast.makeText(this,getString(R.string.saved_ok), Toast.LENGTH_LONG).show();
-		WallpaperInfo wallpaperInfo = WallpaperManager.getInstance(this).getWallpaperInfo();
-        if(wallpaperInfo == null || !(wallpaperInfo.getComponent().getClassName().startsWith("com.tweetpaper")))
-        	showSetWallpaperDialog();
 		
+		if(!utils.isTweetpaperSet()){
+			if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
+                Intent intent = new Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
+            intent.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,new ComponentName(this, TweetpaperService.class));
+            startActivity(intent);
+            Toast.makeText(this,getString(R.string.saved_ok), Toast.LENGTH_LONG).show();
+            }else{
+                    Intent intent = new Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
+                    startActivity(intent);
+                    Toast.makeText(this,getString(R.string.saved_ok), Toast.LENGTH_LONG).show();
+            }
+		}
+		finish();
 	}
 	
+	public void onControlClicked(View v){
+		ImageView playPause = (ImageView)findViewById(R.id.control_play_pause);
+		ImageView back = (ImageView)findViewById(R.id.control_back);
+		ImageView forward = (ImageView)findViewById(R.id.control_forward);
+		if(v == playPause){	
+			if(!utils.isPaused()){
+				utils.setPaused(true);
+				playPause.setImageResource(R.drawable.play_icon);
+			}else{
+				utils.setPaused(false);
+				playPause.setImageResource(R.drawable.pause_icon);
+			}
+		}else if(v == back){
+			utils.setBack(true);
+			back.setVisibility(View.INVISIBLE);
+		}else if(v == forward){
+			utils.setForward(true);
+			forward.setVisibility(View.INVISIBLE);
+		}
+	}
+	
+	private void updateControls(){
+		ImageView playPause = (ImageView)findViewById(R.id.control_play_pause);
+		ImageView back = (ImageView)findViewById(R.id.control_back);
+		ImageView forward = (ImageView)findViewById(R.id.control_forward);
+		
+		playPause.setVisibility(View.VISIBLE);
+		back.setVisibility(View.VISIBLE);
+		forward.setVisibility(View.VISIBLE);
+		if(utils.isPaused())
+			playPause.setImageResource(R.drawable.play_icon);
+		else
+			playPause.setImageResource(R.drawable.pause_icon);
+	}
+	/*
 	public void showSetWallpaperDialog() {
 	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
 	    builder.setTitle(getString(R.string.set_wallpaper_title));
@@ -99,14 +164,7 @@ public class TweetpaperSettings extends Activity {
 			@SuppressLint("InlinedApi")
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
-				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN){
-	                Intent intent = new Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);
-	            intent.putExtra(WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,new ComponentName(activity, TweetpaperService.class));
-	            startActivity(intent);
-	            }else{
-	                    Intent intent = new Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER);
-	                    startActivity(intent);
-	            }
+				
 			}
 	    	
 	    });
@@ -119,7 +177,7 @@ public class TweetpaperSettings extends Activity {
 	    });
 	    builder.show();
 	}
-	
+	*/
 	private class showTwitterLoginPopup extends AsyncTask<Void, Void, RequestToken> {
 
         @Override
@@ -157,14 +215,47 @@ public class TweetpaperSettings extends Activity {
         	displayLoggedInScreen();
         }*/
 		hashtagEditText.setText(utils.getHashTag());
-        if(utils.isTwitterLoggedIn())
+        if(utils.isTwitterLoggedIn()){
         	displayLoggedInScreen();
+        	updateInterval();
+        	updateControls();
+        }
+        
+        if(utils.isTweetpaperSet())
+        	findViewById(R.id.controls).setVisibility(View.VISIBLE);
+        else
+        	findViewById(R.id.controls).setVisibility(View.GONE);
+        
         super.onResume();
 	}
 	
 	private void displayLoggedInScreen(){
 		findViewById(R.id.twitter_login).setVisibility(View.GONE);
 		findViewById(R.id.settings_screen).setVisibility(View.VISIBLE);
+	}
+	
+	private void updateInterval(){
+		Spinner intervalDropDown = (Spinner)findViewById(R.id.interval_selector);
+		switch(utils.getInterval()){
+			case Constants.INTERVAL_5M:
+				intervalDropDown.setSelection(0);
+				break;
+			case Constants.INTERVAL_15M:
+				intervalDropDown.setSelection(1);
+				break;
+			case Constants.INTERVAL_30M:
+				intervalDropDown.setSelection(2);
+				break;
+			case Constants.INTERVAL_1H:
+				intervalDropDown.setSelection(3);
+				break;
+			case Constants.INTERVAL_24H:
+				intervalDropDown.setSelection(4);
+				break;
+			default:
+				intervalDropDown.setSelection(0);
+				break;
+		}
 	}
 	
 	private void showTwitterLoginDialog(String url){

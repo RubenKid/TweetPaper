@@ -5,6 +5,9 @@ public class Constants{
     public static final String TWEETPAPER_PREFS = "tweetpaper_prefs";
     public static final String PREFS_INTERVAL = "prefs_interval";
     public static final String PREFS_HASHTAG = "prefs_hashtag";
+    public static final String PREFS_PAUSED = "prefs_paused";
+    public static final String PREFS_BACK = "prefs_back";
+    public static final String PREFS_FORWARD = "prefs_forward";
     public static final String PREFS_TWITTER_OAUTH_TOKEN = "prefs_twitter_oauth_token";
     public static final String PREFS_TWITTER_OAUTH_TOKEN_SECRET = "prefs_twitter_oauth_token_secret";
     public static final String PREFS_TWITTER_USERNAME = "prefs_twitter_username";
@@ -17,5 +20,11 @@ public class Constants{
     static final String URL_TWITTER_AUTH = "auth_url";
     static final String URL_TWITTER_OAUTH_VERIFIER = "oauth_verifier";
     static final String URL_TWITTER_OAUTH_TOKEN = "oauth_token";
+    
+    public static final int INTERVAL_5M = 5;
+    public static final int INTERVAL_15M = 15;
+    public static final int INTERVAL_30M = 30;
+    public static final int INTERVAL_1H = 60;
+    public static final int INTERVAL_24H = 60*24;
     
 }
