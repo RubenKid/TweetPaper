@@ -8,6 +8,7 @@ public class Constants{
     public static final String PREFS_PAUSED = "prefs_paused";
     public static final String PREFS_BACK = "prefs_back";
     public static final String PREFS_FORWARD = "prefs_forward";
+    public static final String PREFS_WIFI_ONLY = "prefs_wifi_only";
     public static final String PREFS_TWITTER_OAUTH_TOKEN = "prefs_twitter_oauth_token";
     public static final String PREFS_TWITTER_OAUTH_TOKEN_SECRET = "prefs_twitter_oauth_token_secret";
     public static final String PREFS_TWITTER_USERNAME = "prefs_twitter_username";

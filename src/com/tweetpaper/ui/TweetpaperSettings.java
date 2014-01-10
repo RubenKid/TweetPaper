@@ -6,45 +6,38 @@ import twitter4j.TwitterFactory;
 import twitter4j.auth.RequestToken;
 import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
-
-import com.tweetpaper.R;
-import com.tweetpaper.R.id;
-import com.tweetpaper.R.layout;
-import com.tweetpaper.R.menu;
-import com.tweetpaper.R.string;
-import com.tweetpaper.service.TweetpaperService;
-import com.tweetpaper.utils.Constants;
-import com.tweetpaper.utils.TweetpaperUtils;
-
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.WallpaperManager;
+import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.annotation.SuppressLint;
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.WallpaperInfo;
-import android.app.WallpaperManager;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
-import android.content.DialogInterface.OnDismissListener;
-import android.content.Intent;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnKeyListener;
 import android.view.Window;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.tweetpaper.R;
+import com.tweetpaper.service.TweetpaperService;
+import com.tweetpaper.utils.Constants;
+import com.tweetpaper.utils.TweetpaperUtils;
 
 public class TweetpaperSettings extends Activity {
 
@@ -52,12 +45,15 @@ public class TweetpaperSettings extends Activity {
     private Twitter twitter;
     public RequestToken requestToken;
     EditText hashtagEditText;
+    TwitterFactory twitterFactory;
+    Activity activity;
     
     private int[] intervals = {Constants.INTERVAL_5M,Constants.INTERVAL_15M,Constants.INTERVAL_30M,Constants.INTERVAL_1H,Constants.INTERVAL_24H};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		activity = this;
 		setContentView(R.layout.activity_tweetpaper_settings);
 		utils = new TweetpaperUtils(this);
 		
@@ -66,14 +62,13 @@ public class TweetpaperSettings extends Activity {
 		builder.setOAuthConsumerSecret(Constants.TWITTER_CONSUMER_SECRET);
 		Configuration configuration = builder.build();
 		  
-		TwitterFactory twitterFactory = new TwitterFactory(configuration);
+		twitterFactory = new TwitterFactory(configuration);
 		twitter = twitterFactory.getInstance();
 		
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
 		hashtagEditText = (EditText)findViewById(R.id.hashtag_edit);
 		hashtagEditText.setOnKeyListener(new OnKeyListener(){
-
 			@Override
 			public boolean onKey(View v, int keyCode, KeyEvent event) {
 				if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
@@ -81,6 +76,19 @@ public class TweetpaperSettings extends Activity {
 					return true;
 				}
 				return false;
+			}
+		});
+		CheckBox wifiControl = (CheckBox)findViewById(R.id.wifi_control_checkbox);
+		wifiControl.setOnCheckedChangeListener(new OnCheckedChangeListener(){
+
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView,
+					boolean isChecked) {
+				if(isChecked)
+					utils.setWifiOnly(true);
+				else
+					utils.setWifiOnly(false);
+				
 			}
 			
 		});
@@ -132,11 +140,21 @@ public class TweetpaperSettings extends Activity {
 				playPause.setImageResource(R.drawable.pause_icon);
 			}
 		}else if(v == back){
-			utils.setBack(true);
-			back.setVisibility(View.INVISIBLE);
+			if(!utils.isBackPressed()){
+				utils.setBack(true);
+				back.setImageResource(R.drawable.back_icon_pressed);
+			}else{
+				utils.setBack(false);
+				back.setImageResource(R.drawable.back_icon);
+			}	
 		}else if(v == forward){
-			utils.setForward(true);
-			forward.setVisibility(View.INVISIBLE);
+			if(!utils.isBackPressed()){
+				utils.setForward(true);
+				forward.setImageResource(R.drawable.forward_icon_pressed);
+			}else{
+				utils.setForward(false);
+				back.setImageResource(R.drawable.forward_icon);
+			}
 		}
 	}
 	
@@ -147,11 +165,21 @@ public class TweetpaperSettings extends Activity {
 		
 		playPause.setVisibility(View.VISIBLE);
 		back.setVisibility(View.VISIBLE);
+		back.setImageResource(R.drawable.back_icon);
 		forward.setVisibility(View.VISIBLE);
+		forward.setImageResource(R.drawable.forward_icon);
 		if(utils.isPaused())
 			playPause.setImageResource(R.drawable.play_icon);
 		else
 			playPause.setImageResource(R.drawable.pause_icon);
+	}
+	
+	private void updateWifiControl(){
+		CheckBox wifiControl = (CheckBox)findViewById(R.id.wifi_control_checkbox);
+		if(utils.isOnlyOnWifiEnabled())
+			wifiControl.setChecked(true);
+		else
+			wifiControl.setChecked(false);
 	}
 	/*
 	public void showSetWallpaperDialog() {
@@ -184,9 +212,11 @@ public class TweetpaperSettings extends Activity {
         protected RequestToken doInBackground(Void... params) {
         	RequestToken rt = null;
         	try {
+        		twitter = twitterFactory.getInstance();
         		rt = twitter.getOAuthRequestToken(Constants.TWITTER_CALLBACK_URL);	
         	 } catch (TwitterException e) {
    			  e.printStackTrace();
+   			  return null;
    		  	}
             return rt;
         }
@@ -196,7 +226,11 @@ public class TweetpaperSettings extends Activity {
         	if(rt != null){
 	        	requestToken = rt;
 	        	showTwitterLoginDialog(rt.getAuthenticationURL());
+        	}else{
+       		 	Toast.makeText(activity, getString(R.string.error_twitter_login), Toast.LENGTH_LONG).show();
+       		 	hideLoader();
         	}
+        		
         }
     }
 	
@@ -219,6 +253,7 @@ public class TweetpaperSettings extends Activity {
         	displayLoggedInScreen();
         	updateInterval();
         	updateControls();
+        	updateWifiControl();
         }
         
         if(utils.isTweetpaperSet())
@@ -295,6 +330,7 @@ public class TweetpaperSettings extends Activity {
 				}
 			}
 		});
+		dialog.show();
         wb.loadUrl(url);
 	}
 	

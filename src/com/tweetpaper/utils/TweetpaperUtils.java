@@ -85,6 +85,16 @@ public class TweetpaperUtils{
           prefs.edit().putBoolean(Constants.PREFS_FORWARD, forward).commit();
       }
 	  
+	  public boolean isOnlyOnWifiEnabled() {  
+		  SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          return mPrefs.getBoolean(Constants.PREFS_WIFI_ONLY, true);
+      }
+	  
+	  public void setWifiOnly(boolean wifiOnly) {  
+          SharedPreferences prefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
+          prefs.edit().putBoolean(Constants.PREFS_WIFI_ONLY, wifiOnly).commit();
+      }
+	  
 	  /*** Get twitter token for logged in users* */
 	  public String getTwitterAccessToken() {
         SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
@@ -96,6 +106,7 @@ public class TweetpaperUtils{
         SharedPreferences mPrefs = context.getSharedPreferences(Constants.TWEETPAPER_PREFS, Context.MODE_PRIVATE);
 	  	return mPrefs.getString(Constants.PREFS_TWITTER_OAUTH_TOKEN_SECRET, null);
 	  }
+	  
 	  
 	  /*** Check if Twitter Logged in* */
 	  public boolean isTwitterLoggedIn() {
@@ -137,6 +148,12 @@ public class TweetpaperUtils{
 		    ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 		    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+		}
+	  
+	  public boolean isWifiConnected() {
+		    ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		    NetworkInfo mWifi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		    return mWifi != null && mWifi.isConnected();
 		}
 	  
 	  public boolean isTweetpaperSet(){

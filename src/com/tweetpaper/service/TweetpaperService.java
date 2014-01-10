@@ -105,7 +105,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	                  handler.postDelayed(drawRunner, interval);
 	                  return;
 	          }
-	          if(!utils.isNetworkAvailable()){
+	          if(!utils.isNetworkAvailable() || (utils.isOnlyOnWifiEnabled() && !utils.isWifiConnected())){
 	        	  Log.i("tweetpaper","No network");
 	        	  Bitmap bitmapCache = getBitmapInCache();
 	              if(bitmapCache != null)
@@ -213,8 +213,7 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	public void onVisibilityChanged(boolean visible) {
 	  this.visible = visible;
 	  updateInterval();
-	  boolean hashtagChanged = updateHashtag();
-	  forceUpdate = false;
+	  forceUpdate = updateHashtag();
 	  
 	  if(utils.isBackPressed() && nextPositionToDisplay > 1 && !utils.isForwardPressed()){
 		  nextPositionToDisplay = nextPositionToDisplay-2;
@@ -224,11 +223,10 @@ import com.tweetpaper.utils.TweetpaperUtils;
 	  if(utils.isForwardPressed() && !utils.isBackPressed()){
 		  utils.setForward(false);
 		  forceUpdate = true;
-	  }
-		  
+	  }		  
 	  
 	  //If background is visible or no items or we changed interval, we should refresh
-	  if ((visible && (System.currentTimeMillis() - lastchange) > interval) || itemsArray.size() == 0 || hashtagChanged || utils.isForwardPressed() || forceUpdate) {
+	  if ((visible && (System.currentTimeMillis() - lastchange) > interval) || itemsArray.size() == 0 || forceUpdate) {
 	    handler.post(drawRunner);
 	  } else if(!visible){
 	    //handler.removeCallbacks(drawRunner);

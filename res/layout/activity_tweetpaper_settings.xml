@@ -70,6 +70,32 @@
 		             android:entries="@array/intervals"
 		             android:prompt="@string/intervals_prompt"/>
 		    </RelativeLayout>
+		    
+		    <RelativeLayout
+		        android:id="@+id/wifi_control"
+		        android:layout_width="fill_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_marginTop="10dp"
+		        android:layout_marginLeft="15dp"
+		        android:layout_marginRight="15dp"
+		        android:layout_below="@id/interval"
+		        android:paddingBottom="10dp">
+		
+		        <TextView
+		            android:id="@+id/wifi_control_text"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_alignParentLeft="true"
+		            android:text="@string/wifi_control"
+		            android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		       	<CheckBox
+		            android:id="@+id/wifi_control_checkbox"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:checked="true"
+		            android:layout_alignParentRight="true"/>
+		    </RelativeLayout>
 
 		    <RelativeLayout
 		        android:id="@+id/hashtag"

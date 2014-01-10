@@ -5,6 +5,7 @@
     <string name="title_activity_tweetpaper_settings">TweetPaper</string>
     <string name="action_settings">Settings</string>
     <string name="interval_text">Update interval</string>
+    <string name="wifi_control">Download images on Wifi only</string>
     <string name="save_config">Save</string>
     <string name="twitter_login_text">Please login with your Twitter account to start</string>
     <string name="hashtag">hashtag</string>
@@ -26,4 +27,5 @@
 	<string name="no">No, thanks</string>
 	<string name="error_empty_hashtag">Error&#8230; hashtag cannot be empty</string>
 	<string name="wallpaper_chooser_msg">Please select TweetPaper</string>
+	<string name="error_twitter_login">Error connecting to Twitter. Please try again</string>
 </resources>
